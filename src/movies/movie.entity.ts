@@ -5,10 +5,10 @@ export class Movie {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   title: string;
 
-  @Column()
+  @Column('int')
   year: number;
 
   @Column('simple-array')
