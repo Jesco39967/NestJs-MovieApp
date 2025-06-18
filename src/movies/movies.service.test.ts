@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { MoviesService } from './movies.service';
 import { Repository } from 'typeorm';
 import { Movie } from './movie.entity';
@@ -8,27 +8,17 @@ describe('MoviesService', () => {
   let service: MoviesService;
   let mockMovieRepository: Partial<Repository<Movie>>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     mockMovieRepository = {
-      create: jest.fn(),
-      save: jest.fn(),
-      findOne: jest.fn(),
-      find: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
+      create: vi.fn(),
+      save: vi.fn(),
+      findOne: vi.fn(),
+      find: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        MoviesService,
-        {
-          provide: getRepositoryToken(Movie),
-          useValue: mockMovieRepository,
-        },
-      ],
-    }).compile();
-
-    service = module.get<MoviesService>(MoviesService);
+    service = new MoviesService(mockMovieRepository as any);
   });
 
   // Error Handling Tests
@@ -45,7 +35,7 @@ describe('MoviesService', () => {
 
   describe('getMovieById', () => {
     it('should throw NotFoundException for non-existent movie', async () => {
-      mockMovieRepository.findOne.mockResolvedValue(null);
+      mockMovieRepository.findOne = vi.fn().mockResolvedValue(null);
       
       await expect(service.getMovieById('non-existent-id'))
         .rejects.toThrow(NotFoundException);
@@ -54,14 +44,14 @@ describe('MoviesService', () => {
 
   describe('updateMovie', () => {
     it('should throw NotFoundException when updating non-existent movie', async () => {
-      mockMovieRepository.findOne.mockResolvedValue(null);
+      mockMovieRepository.findOne = vi.fn().mockResolvedValue(null);
       
       await expect(service.updateMovie('non-existent-id', {}))
         .rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException for invalid update data', async () => {
-      mockMovieRepository.findOne.mockResolvedValue({} as Movie);
+      mockMovieRepository.findOne = vi.fn().mockResolvedValue({} as Movie);
       
       await expect(service.updateMovie('existing-id', {
         year: -1 // Invalid year
@@ -71,7 +61,7 @@ describe('MoviesService', () => {
 
   describe('deleteMovie', () => {
     it('should throw NotFoundException when deleting non-existent movie', async () => {
-      mockMovieRepository.findOne.mockResolvedValue(null);
+      mockMovieRepository.findOne = vi.fn().mockResolvedValue(null);
       
       await expect(service.deleteMovie('non-existent-id'))
         .rejects.toThrow(NotFoundException);
@@ -82,7 +72,7 @@ describe('MoviesService', () => {
 
   describe('searchMovies', () => {
     it('should handle empty search results gracefully', async () => {
-      mockMovieRepository.find.mockResolvedValue([]);
+      mockMovieRepository.find = vi.fn().mockResolvedValue([]);
       
       const results = await service.searchMovies('non-existent-movie');
       expect(results).toEqual([]);
@@ -107,8 +97,3 @@ describe('MoviesService', () => {
     });
   });
 });
-
-// Mock TypeORM's getRepositoryToken for testing
-function getRepositoryToken(entity: any): string {
-  return `${entity.name}Repository`;
-}
