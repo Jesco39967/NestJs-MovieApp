@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import 'reflect-metadata';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MoviesService } from './movies.service';
 import { Repository } from 'typeorm';
 import { Movie } from './movie.entity';
